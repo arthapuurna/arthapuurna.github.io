@@ -124,8 +124,6 @@ function benakasemmemiiToTTS(text){
     t = t.replace(/ui/g, "ui");
     t = t.replace(/-ong\b/g, "-ong");
     t = t.replace(/\b(\w+?)(re|ge|we|ye)\b/gi, "$1-$2");
-    t = t.replace(/--+/g,"-");
-    t = t.replace(/- /g,"-");
     return t;
 }
 
