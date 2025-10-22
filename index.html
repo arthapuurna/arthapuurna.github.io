@@ -1,86 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Benakasemmemii → IPA + TTS</title>
 <style>
-body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial; background:#fbfdff; color:#0f172a; margin:0; padding:28px; display:flex; justify-content:center;}
-.wrap{width:100%; max-width:980px;}
-h1{font-size:1.25rem;}
-p.lead{margin:8px 0 18px; color:#6b7280; font-size:0.95rem;}
-.card{background:#fff; border-radius:12px; padding:18px; box-shadow:0 6px 18px rgba(15,23,42,0.06); margin-top:18px;}
-textarea{width:100%; min-height:120px; font-size:1.05rem; padding:12px; border:1px solid #e6eefc; border-radius:8px; resize:vertical; box-sizing:border-box;}
-.row{display:flex; gap:12px; align-items:center; margin-top:12px; flex-wrap:wrap;}
-button{background:#2f6fed; color:white; border:none; padding:10px 14px; border-radius:8px; cursor:pointer; font-weight:600;}
-button.ghost{background:transparent; color:#2f6fed; border:1px solid rgba(47,111,237,0.12);}
-#output{min-height:80px; padding:12px; background:#f8fafc; border-radius:8px; font-family: "Noto Sans", system-ui, "Segoe UI", Roboto, Arial; white-space:pre-wrap; margin-top:12px; border:1px solid #eef2ff;}
-label{font-size:0.9rem; color:#6b7280;}
-select,input[type=range]{padding:6px 8px; border-radius:8px; }
-.controls{display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
-.small{font-size:0.85rem; color:#6b7280;}
-footer{margin-top:14px; font-size:0.82rem; color:#6b7280;}
-.kbd{font-family:monospace; background:#f1f5f9; padding:2px 6px; border-radius:6px; font-size:0.85rem;}
+body { font-family: Arial, sans-serif; background: #f8fafc; color: #0f172a; margin:0; padding:20px; display:flex; justify-content:center;}
+.wrap { width:100%; max-width:800px; }
+h1 { font-size:1.3rem; }
+textarea { width:100%; min-height:120px; font-size:1rem; padding:10px; border-radius:8px; border:1px solid #ccc; resize:vertical; margin-top:8px; }
+button { padding:8px 12px; margin:4px; border-radius:6px; cursor:pointer; border:none; background:#2f6fed; color:white; font-weight:600; }
+button.ghost { background:transparent; border:1px solid #2f6fed; color:#2f6fed; }
+#output { min-height:80px; padding:10px; background:#fff; border-radius:8px; border:1px solid #ccc; margin-top:8px; white-space:pre-wrap; }
+.row { display:flex; flex-wrap:wrap; gap:8px; margin-top:8px; align-items:center; }
+label.small { font-size:0.85rem; color:#555; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>Benakasemmemii → IPA + TTS</h1>
-  <p class="lead">Paste Benakasemmemii text, press <span class="kbd">Convert</span> to get IPA with stress rules. Use <span class="kbd">Play</span> to hear an approximate pronunciation.</p>
 
-  <div class="card">
-    <label for="input">Benakasemmemii text</label>
-    <textarea id="input" placeholder="Type or paste Benakasemmemii here..."></textarea>
+  <label for="input">Benakasemmemii text</label>
+  <textarea id="input" placeholder="Type or paste Benakasemmemii here..."></textarea>
 
-    <div class="row">
-      <div class="controls">
-        <button id="convertBtn">Convert to IPA</button>
-        <button id="copyIpa" class="ghost">Copy IPA</button>
-        <button id="clearBtn" class="ghost">Clear</button>
-      </div>
+  <div class="row">
+    <button id="convertBtn">Convert to IPA</button>
+    <button id="copyIpa" class="ghost">Copy IPA</button>
+    <button id="clearBtn" class="ghost">Clear</button>
+  </div>
 
-      <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
-        <label class="small">Voice</label>
-        <select id="voiceSelect" aria-label="Select voice"></select>
-      </div>
-    </div>
+  <label class="small">IPA Output</label>
+  <div id="output"></div>
 
-    <div class="row" style="margin-top:8px;">
-      <label class="small">Rate</label>
-      <input id="rate" type="range" min="0.6" max="1.6" step="0.05" value="0.95">
-      <label class="small">Pitch</label>
-      <input id="pitch" type="range" min="0.6" max="1.6" step="0.05" value="1.0">
-      <button id="speakBtn" style="margin-left:auto">🔊 Play</button>
-    </div>
-
-    <div id="output" aria-live="polite"></div>
-
-    <div class="row" style="margin-top:10px;">
-      <div style="flex:1">
-        <label class="small">Approx. TTS text (editable)</label>
-        <textarea id="ttsText" rows="3" placeholder="Editable phonetic text for the speech engine..."></textarea>
-      </div>
-    </div>
-
-    <footer>
-      <div>Note: browser TTS reads the editable ASCII phonetic text; it cannot reliably speak raw IPA.</div>
-    </footer>
+  <label class="small">Editable TTS text</label>
+  <textarea id="ttsText" rows="3" placeholder="Editable text for speech synthesis"></textarea>
+  <div class="row">
+    <label class="small">Rate</label>
+    <input id="rate" type="range" min="0.6" max="1.6" step="0.05" value="0.95">
+    <label class="small">Pitch</label>
+    <input id="pitch" type="range" min="0.6" max="1.6" step="0.05" value="1.0">
+    <button id="speakBtn">🔊 Play</button>
   </div>
 </div>
 
 <script>
-/* =========================
-   Mapping and IPA conversion
-========================= */
+// ==================== Mapping & IPA ====================
 const mappingOrdered = [
-["jny","d͡ʑɲ"],["ong","õ"],
-["aa","aː"],["bh","bʱ"],["ch","t͡ɕʰ"],["dh","dʱ"],["ei","eː"],["gh","gʱ"],
-["ii","iː"],["jh","d͡ʑʱ"],["kh","kʰ"],["ou","oː"],["ph","pʰ"],["rr","r"],
+["jny","dʑɲ"],["ong","õ"],
+["aa","aː"],["bh","bʱ"],["ch","tɕ"],["dh","dʱ"],["ei","eː"],["gh","gʱ"],
+["ii","iː"],["jh","dʑʱ"],["kh","kʰ"],["ou","oː"],["ph","pʰ"],["rr","r"],
 ["sh","ɕ"],["th","tʰ"],["uu","uː"],
 ["ai","ai̯"],["au","au̯"],["eu","eu̯"],["oi","oi̯"],["ui","ui̯"],
 ["ng","ŋg"],["nk","ŋk"],
-["a","a"],["b","b"],["c","t͡ɕ"],["d","d"],["e","e"],["f","f"],["g","g"],
-["h","h"],["i","i"],["j","d͡ʑ"],["k","k"],["l","l"],["m","m"],["n","n"],
+["a","a"],["b","b"],["c","tɕ"],["d","d"],["e","e"],["f","f"],["g","g"],
+["h","h"],["i","i"],["j","dʑ"],["k","k"],["l","l"],["m","m"],["n","n"],
 ["o","o"],["p","p"],["r","ɾ"],["s","s"],["t","t"],["u","u"],["w","ʋ"],
 ["y","j"],["z","z"],["q","k"],["v","ʋ"],["x","ks"]
 ];
@@ -136,9 +109,93 @@ function wordOrthToIPAWithStress(word){
   return ipaSyls.join("");
 }
 
-/* =========================
-   TTS with last word high pitch in questions
-========================= */
-function speakWithLastWordHighPitch(text, pitch=1.3, normalPitch=1.0, rate=0.95) {
-    const sentences = text.match(/[^.!?]+[.!?]?/g) || [];
-    sentences.for
+// ==================== TTS-friendly transliteration ====================
+function benakasemmemiiToTTS(text){
+    let t = text;
+    t = t.replace(/aa/g, "aa");
+    t = t.replace(/ii/g, "ii");
+    t = t.replace(/uu/g, "uu");
+    t = t.replace(/ei/g, "ei");
+    t = t.replace(/ou/g, "ou");
+    t = t.replace(/ai/g, "ai");
+    t = t.replace(/au/g, "au");
+    t = t.replace(/eu/g, "eu");
+    t = t.replace(/oi/g, "oi");
+    t = t.replace(/ui/g, "ui");
+    t = t.replace(/-ong\b/g, "-ong");
+    t = t.replace(/\b(\w+?)(re|ge|we|ye)\b/gi, "$1-$2");
+    t = t.replace(/--+/g,"-");
+    t = t.replace(/- /g,"-");
+    return t;
+}
+
+// ==================== TTS ====================
+function speakWithLastWordHighPitch(text, pitch=1.3, normalPitch=1.0, rate=0.95){
+    if(!("speechSynthesis" in window)){
+        alert("TTS not supported in this browser!");
+        return;
+    }
+    const sentences = text.match(/[^.!?]+[.!?]?/g)||[];
+    sentences.forEach(sentence=>{
+        sentence = sentence.trim();
+        if(sentence.endsWith("?")){
+            const words = sentence.split(/\s+/);
+            const lastWord = words.pop();
+            const startSentence = words.join(" ");
+            if(startSentence.length>0){
+                const u1 = new SpeechSynthesisUtterance(startSentence+" ");
+                u1.pitch = normalPitch; u1.rate=rate;
+                speechSynthesis.speak(u1);
+            }
+            const u2 = new SpeechSynthesisUtterance(lastWord);
+            u2.pitch = pitch; u2.rate=rate;
+            speechSynthesis.speak(u2);
+        } else {
+            const u = new SpeechSynthesisUtterance(sentence);
+            u.pitch=normalPitch; u.rate=rate;
+            speechSynthesis.speak(u);
+        }
+    });
+}
+
+// ==================== DOM bindings ====================
+document.addEventListener("DOMContentLoaded", function(){
+    const input = document.getElementById("input");
+    const output = document.getElementById("output");
+    const ttsText = document.getElementById("ttsText");
+    const convertBtn = document.getElementById("convertBtn");
+    const copyBtn = document.getElementById("copyIpa");
+    const clearBtn = document.getElementById("clearBtn");
+    const speakBtn = document.getElementById("speakBtn");
+    const rateInput = document.getElementById("rate");
+    const pitchInput = document.getElementById("pitch");
+
+    convertBtn.addEventListener("click",()=>{
+        const words = input.value.split(/\s+/);
+        const ipaWords = words.map(w=>wordOrthToIPAWithStress(w));
+        const ipaResult = ipaWords.join(" ");
+        output.textContent = ipaResult;
+        ttsText.value = benakasemmemiiToTTS(input.value);
+    });
+
+    copyBtn.addEventListener("click",()=>{
+        navigator.clipboard.writeText(output.textContent);
+        alert("IPA copied!");
+    });
+
+    clearBtn.addEventListener("click",()=>{
+        input.value=""; output.textContent=""; ttsText.value="";
+    });
+
+    speakBtn.addEventListener("click", ()=>{
+        const text = ttsText.value.trim();
+        if(text.length>0){
+            const rate = parseFloat(rateInput.value);
+            const pitch = parseFloat(pitchInput.value);
+            speakWithLastWordHighPitch(text, pitch, 1.0, rate);
+        }
+    });
+});
+</script>
+</body>
+</html>
